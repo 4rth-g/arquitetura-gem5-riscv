@@ -1,0 +1,16 @@
+# Clone do gem5 (vários GB + binário de ~970 MB) — reconstruído por build-gem5.sh
+gem5/
+
+# Binários compilados dos exemplos (regeneráveis)
+bin/
+
+# Saídas de simulação (m5out) — mantém só os .csv de resumo
+resultados/*
+!resultados/*.csv
+
+# Artefatos locais
+__pycache__/
+*.o
+*.pyc
+STATUS_*
+build.log
