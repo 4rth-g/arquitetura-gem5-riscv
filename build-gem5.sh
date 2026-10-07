@@ -16,7 +16,7 @@ set -o pipefail
 BUILD_DIR="$(cd "$(dirname "$0")" && pwd)"
 GEM5_DIR="$BUILD_DIR/gem5"
 LOG="$BUILD_DIR/build.log"
-ENGINE="$(command -v podman || command -v docker)"
+ENGINE="${ENGINE:-$(command -v podman || command -v docker)}"
 BASE="ghcr.io/gem5/ubuntu-24.04_all-dependencies@sha256:a9b10b20b91d32610d628b0ee7041ac7767d361900f5c7306f83bdf0d981c57c"
 IMG="gem5-riscv:local"
 GEM5_COMMIT="$(cat "$BUILD_DIR/gem5_commit.txt")"
@@ -33,7 +33,11 @@ falha() {
   echo "== FALHOU: $1 ==" | tee -a "$LOG"
   exit 1
 }
-run() { "$ENGINE" run --rm -v "$GEM5_DIR":/gem5 -w /gem5 "$@"; }
+# Docker (com root) gravaria os arquivos como root: roda com o usuário do host.
+# No Podman sem root, o root do container já é o próprio usuário.
+USUARIO=()
+[[ "$ENGINE" == *docker ]] && USUARIO=(--user "$(id -u):$(id -g)" -e HOME=/tmp)
+run() { "$ENGINE" run --rm "${USUARIO[@]}" -v "$GEM5_DIR":/gem5 -w /gem5 "$@"; }
 
 # 1) gem5 no commit fixado (busca rasa só daquele commit)
 if [ ! -d "$GEM5_DIR/.git" ]; then

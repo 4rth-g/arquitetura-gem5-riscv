@@ -1,5 +1,6 @@
 # Imagem derivada: gem5 (deps oficiais) + cross-compiler RISC-V.
-# Assim compilamos os exemplos e rodamos o gem5 no MESMO ambiente reprodutível.
+# Assim compilamos os exemplos e rodamos o gem5 no MESMO ambiente reprodutível
+# (numpy: para as referências em Python que conferem os exemplos).
 #
 # Tudo fixado para que a imagem seja igual em qualquer máquina, em qualquer data:
 #  - base pelo digest (não pela tag :latest, que muda);
@@ -13,4 +14,5 @@ RUN apt-get update --snapshot "$APT_SNAPSHOT" \
          g++-13-riscv64-linux-gnu=13.3.0-6ubuntu2~24.04.1cross1 \
          binutils-riscv64-linux-gnu=2.42-4ubuntu2.10 \
          libc6-dev-riscv64-cross=2.39-0ubuntu8cross1 \
+         python3-numpy=1:1.26.4+ds-6ubuntu1 \
     && rm -rf /var/lib/apt/lists/*
