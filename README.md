@@ -2,11 +2,16 @@
 
 Infraestrutura do trabalho de **Arquitetura de Computadores (COMP0415 — UFS)**:
 compila o **gem5** para a ISA **RISC-V** dentro de um container, com commit
-fixado, para que a dupla (sistemas diferentes) tenha exatamente o mesmo
-simulador.
+fixado, para que qualquer máquina tenha exatamente o mesmo simulador.
 
-Os exemplos, a execução das simulações e a análise ficam no repositório
-[`comp0415-gem5`](../comp0415-gem5), clonado **ao lado** deste.
+Os exemplos, a execução das simulações, a análise, o artigo e os slides ficam
+no repositório [`comp0415-gem5`](https://github.com/4rth-g/comp0415-gem5),
+clonado **ao lado** deste — que deve ficar numa pasta chamada `gem5-build`:
+
+```bash
+git clone https://github.com/4rth-g/arquitetura-gem5-riscv.git gem5-build
+git clone https://github.com/4rth-g/comp0415-gem5.git
+```
 
 ## Ambiente reprodutível
 
