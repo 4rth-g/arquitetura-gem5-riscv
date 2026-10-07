@@ -1,0 +1,63 @@
+Build information:
+
+gem5 version 25.1.0.1
+compiled Sep 25 2026 02:41:57
+build options:
+    ARMLMD_LICENSE_COUNT = 0
+    ARMLMD_LICENSE_FILE = 
+    BATCH = False
+    BATCH_CMD = 
+    BUILD_GPU = False
+    BUILD_ISA = True
+    BUILD_TLM = False
+    HAVE_CAPSTONE = True
+    HAVE_DEPRECATED_NAMESPACE = True
+    HAVE_FENV = True
+    HAVE_HDF5 = True
+    HAVE_KVM = True
+    HAVE_PERF_ATTR_EXCLUDE_HOST = 1
+    HAVE_PNG = True
+    HAVE_POSIX_CLOCK = True
+    HAVE_PROTOBUF = True
+    HAVE_SYSTEMC = True
+    HAVE_TUNTAP = True
+    HAVE_VALGRIND = False
+    KVM_ISA = x86
+    M5_BUILD_CACHE = 
+    MAXCORE_HOME = 
+    NUMBER_BITS_PER_SET = 64
+    PROTOCOL = MI_example
+    PVLIB_FLAVOR = 
+    PVLIB_HOME = 
+    RUBY = True
+    RUBY_PROTOCOL_CHI = False
+    RUBY_PROTOCOL_GPU_VIPER = False
+    RUBY_PROTOCOL_Garnet_standalone = False
+    RUBY_PROTOCOL_MESI_Three_Level = False
+    RUBY_PROTOCOL_MESI_Three_Level_HTM = False
+    RUBY_PROTOCOL_MESI_Two_Level = False
+    RUBY_PROTOCOL_MI_example = True
+    RUBY_PROTOCOL_MOESI_AMD_Base = False
+    RUBY_PROTOCOL_MOESI_CMP_directory = False
+    RUBY_PROTOCOL_MOESI_CMP_token = False
+    RUBY_PROTOCOL_MOESI_hammer = False
+    RUBY_PROTOCOL_MSI = False
+    SIMGEN = 
+    SLICC_HTML = False
+    TARGET_GPU_ISA = 
+    USE_ARM_FASTMODEL = False
+    USE_ARM_ISA = False
+    USE_CAPSTONE = False
+    USE_EFENCE = False
+    USE_KVM = True
+    USE_MIPS_ISA = False
+    USE_MULTIPLE_PROTOCOLS = True
+    USE_POSIX_CLOCK = False
+    USE_POWER_ISA = False
+    USE_RISCV_ISA = True
+    USE_SPARC_ISA = False
+    USE_SYSTEMC = True
+    USE_TEST_OBJECTS = False
+    USE_X86_ISA = False
+    VEGA_GPU_ISA = False
+

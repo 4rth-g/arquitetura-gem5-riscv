@@ -1,77 +1,52 @@
-# Simulação arquitetural com gem5 (RISC-V) — Avaliação 1
+# gem5-build — gem5 (RISC-V) reprodutível via container
 
-Trabalho da disciplina **Arquitetura de Computadores (COMP0415 — UFS)**: uso do
-simulador **gem5** para executar algoritmos básicos sobre a ISA **RISC-V** e
-observar métricas de microarquitetura (instruções, ciclos, IPC/CPI, cache).
+Infraestrutura do trabalho de **Arquitetura de Computadores (COMP0415 — UFS)**:
+compila o **gem5** para a ISA **RISC-V** dentro de um container, com commit
+fixado, para que a dupla (sistemas diferentes) tenha exatamente o mesmo
+simulador.
 
-Ênfase em **reprodutibilidade**: a dupla usa sistemas diferentes (**NixOS** e
-**Ubuntu**), e todo o gem5 é compilado/executado dentro de um **container**
-idêntico, eliminando o "na minha máquina funciona".
+Os exemplos, a execução das simulações e a análise ficam no repositório
+[`comp0415-gem5`](../comp0415-gem5), clonado **ao lado** deste.
 
 ## Ambiente reprodutível
 
-- Simulador: **gem5 25.1.0.1** (branch `stable`) — commit fixado em
-  [`gem5_commit.txt`](gem5_commit.txt).
-- Base: imagem oficial `ghcr.io/gem5/ubuntu-24.04_all-dependencies`.
-- Imagem local ([`Containerfile`](Containerfile)): a base + cross-compiler
-  `g++-riscv64-linux-gnu` — mesma imagem compila os exemplos **e** roda o gem5.
-- Motor de container: **Podman** (NixOS) / **Docker** (Ubuntu) — comandos iguais.
+Tudo o que define o simulador está fixado e versionado:
+
+| O quê | Como é fixado |
+|---|---|
+| gem5 **25.1.0.1** | commit em [`gem5_commit.txt`](gem5_commit.txt); o script busca exatamente esse commit |
+| Imagem base `ghcr.io/gem5/ubuntu-24.04_all-dependencies` | **digest** sha256 (não a tag `:latest`, que muda) |
+| Cross-compiler RISC-V (g++ 13.3.0, binutils 2.42, glibc 2.39) | versões explícitas, lidas do **snapshot** de 25/09/2026 do arquivo Ubuntu (`apt --snapshot`) |
+| Binário gerado | [`gem5_build_info.txt`](gem5_build_info.txt) (`gem5.opt -B`: versão e opções de build) |
+
+A mesma imagem `gem5-riscv:local` compila os exemplos **e** roda o gem5.
+Motor de container: **Podman** ou **Docker** (detectado sozinho).
+
+Verificação: binários dos exemplos compilados com esta imagem são idênticos
+bit a bit aos compilados com a imagem anterior ao snapshot — o
+`make verificar` do `comp0415-gem5` confere isso em qualquer máquina.
 
 ## Estrutura
 
 ```
-build-gem5.sh          # clona o gem5 (stable) e compila build/RISCV/gem5.opt via container
-Containerfile          # imagem: deps do gem5 + toolchain RISC-V
-configs_local/
-  se_run.py            # config gem5 (Standard Library), modo SE, troca de CPU por argumento
-exemplos/
-  soma_vetor.cpp       # soma de vetor      (acesso linear à memória)
-  bubble_sort.cpp      # ordenação          (desvios condicionais)
-  busca_binaria.cpp    # busca binária      (acesso não-contíguo, O(log N))
-  fibonacci.cpp        # recursão × iteração (pilha/chamadas)
-  parse_stats.py       # parseia m5out/stats.txt -> tabela Markdown + CSV
-  test_parse_stats.py  # testes do parser (20 asserts)
+build-gem5.sh          # clone no commit fixado + imagens + gem5.opt + libm5 + build info
+Containerfile          # imagem: deps do gem5 (digest) + toolchain RISC-V (snapshot apt)
+gem5_commit.txt        # commit exato do gem5 usado
+gem5_build_info.txt    # saída de `gem5.opt -B` (gerada pelo script)
 ```
-> `gem5/`, `bin/` e as saídas `m5out` não são versionados (ver `.gitignore`).
+> `gem5/` (clone + binário de ~970 MB) não é versionado — `build-gem5.sh` reconstrói.
 
 ## Como reproduzir
 
 ```bash
-# 1) compilar o gem5 (RISC-V) — ~30-60 min de CPU, uma vez
-./build-gem5.sh
-
-# 2) imagem local com o cross-compiler RISC-V
-podman build -t gem5-riscv:local -f Containerfile .
-
-# 3) compilar um exemplo para RISC-V estático
-podman run --rm -v "$PWD":/w -w /w gem5-riscv:local \
-  riscv64-linux-gnu-g++ -O2 -static exemplos/soma_vetor.cpp -o bin/soma_vetor_riscv
-
-# 4) simular no gem5 (troque --cpu por atomic|timing|minor|o3)
-podman run --rm -v "$PWD":/w -w /w gem5-riscv:local \
-  ./gem5/build/RISCV/gem5.opt --outdir=resultados/soma_o3 \
-  configs_local/se_run.py bin/soma_vetor_riscv --cpu o3
-
-# 5) tabela comparativa
-python3 exemplos/parse_stats.py \
-  resultados/soma_atomic:ATOMIC resultados/soma_timing:TIMING resultados/soma_o3:O3
+./build-gem5.sh          # ~1h15 na 1ª vez (-j8 num i5-1245U); depois, segundos
 ```
 
-## Resultado de exemplo (`soma_vetor`, 3 modelos de CPU)
+O script é idempotente: com o `gem5.opt` já compilado, só confere commit e
+imagens, e refaz `libm5` e o build info (`REBUILD=1` força recompilar o gem5;
+`JOBS=n` limita o paralelismo). Progresso em `build.log`; resultado em
+`STATUS_OK` ou `STATUS_FAIL`.
 
-| Métrica | ATOMIC | TIMING | O3 |
-|---|---|---|---|
-| Instruções | 115710 | 115710 | 115710 |
-| Ciclos | 156180 | 231036 | 54936 |
-| IPC | 0.74 | 0.50 | 2.11 |
-| CPI | 1.35 | 2.00 | 0.47 |
-
-Mesmo programa, **mesmas instruções**, ciclos muito diferentes: o desempenho vem
-de **como** a microarquitetura executa (o `O3`, superescalar/fora de ordem,
-alcança IPC > 2). É o que um simulador de arquitetura permite observar.
-
-## Testes
-
-```bash
-python3 exemplos/test_parse_stats.py   # 20 asserts, casos de borda + dados reais
-```
+Resultado: `gem5/build/RISCV/gem5.opt`, `gem5/util/m5/build/riscv/out/libm5.a`
+(marcação de região de interesse) e a imagem `gem5-riscv:local`, usados pelo
+`comp0415-gem5`.
